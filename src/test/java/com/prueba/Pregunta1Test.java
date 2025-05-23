@@ -3,6 +3,7 @@ package com.prueba;
 import static java.lang.Double.valueOf;
 import static org.junit.jupiter.api.Assertions.*;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
@@ -1205,6 +1206,34 @@ Acoplamiento fuerte: El uso excesivo de variables estáticas genera dependencias
             this.edad = edad;
         }
     }
+
+    //84.-¿Qué es el método compareTo()?
+    /*
+    compareTo() compara dos objetos para ordenarlos.
+    Devuelve un número que indica si es menor, igual o mayor.
+     */
+
+    //85.-¿Cómo implementar Comparable en una clase?
+
+    @Getter
+    @AllArgsConstructor
+    public static class Personast implements Comparable<Persona> {
+        private final String nombre;
+        private final int edad;
+
+        @Override
+        public int compareTo(Persona otra) {
+            return Integer.compare(this.edad, otra.edad);
+        }
+    }
+
+    //86.-¿Qué es un Comparator?
+    /*
+    Un Comparator es una interfaz funcional que define el método compare(T o1, T o2) para establecer un orden personalizado entre dos objetos.
+    Se usa cuando necesitas ordenar colecciones de manera diferente a su orden natural (Comparable), por ejemplo con Collections.sort() o Stream.sorted().
+
+     */
+
 
 }
 
