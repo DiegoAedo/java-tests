@@ -1282,11 +1282,8 @@ Acoplamiento fuerte: El uso excesivo de variables estáticas genera dependencias
 
     //88.-¿Qué es la serialización en Java?
     /*
-    La serialización en Java es el proceso de transformar un objeto en una secuencia de bytes para poder almacenarlo (en fichero, base de datos) o transmitirlo (por red)
-    y luego reconstruirlo (deserializarlo) en otro contexto. Para que una clase sea serializable,
-    debe implementar la interfaz marker java.io.Serializable (y, opcionalmente, declarar un serialVersionUID para controlar versiones).
-    Internamente, herramientas como ObjectOutputStream y
-    ObjectInputStream se encargan de escribir y leer los datos de los campos del objeto
+    Serialización es el proceso de convertir un objeto en una secuencia de bytes (o texto) para poder almacenarlo o enviarlo;
+    luego esos bytes se “des-serializan” para recrear el mismo objeto en otro momento o lugar.
 
      */
 
@@ -2208,6 +2205,83 @@ Acoplamiento fuerte: El uso excesivo de variables estáticas genera dependencias
 
     LocalDate hoy = LocalDate.now();                       // 2025-05-23
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    //181.-¿Qué es la serialización?
+    /*
+    Serialización es el proceso de convertir un objeto en una secuencia de bytes (o texto) para poder almacenarlo o enviarlo;
+    luego esos bytes se “des-serializan” para recrear el mismo objeto en otro momento o lugar.o
+     */
+    //182.-¿Cómo serializar un objeto?
+
+    @Test
+    public void testSerializacionYDeserializaci() throws IOException, ClassNotFoundException {
+        // Creamos el objeto original
+        Persona original = new Persona("Ana", 30);
+
+        // --- SERIALIZACIÓN a un array de bytes ---
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(original);
+        }
+
+        // --- DESERIALIZACIÓN desde el array de bytes ---
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        Persona deserializada;
+        try (ObjectInputStream ois = new ObjectInputStream(bais)) {
+            deserializada = (Persona) ois.readObject();
+        }
+
+        // --- ASSERTS para verificar que la deserialización restaura el objeto correctamente ---
+        assertNotSame(original, deserializada, "Debe ser una instancia distinta");
+        assertEquals(original, deserializada, "Los datos deben coincidir tras la deserialización");
+    }
+
+    //183.-¿Qué es una excepción personalizada?
+    /*
+    Una excepción personalizada es una clase que tú mismo defines (extiende Exception o RuntimeException) para representar de forma explícita un tipo de error propio de tu aplicación,
+    en lugar de reutilizar las excepciones genéricas de Java.
+     */
+
+    //184.-¿Cómo crear una excepción personalizada?
+
+    public class MiExcepcion extends RuntimeException {
+        public MiExcepcion(String mensaje) {
+            super(mensaje);
+        }
+    }
+
+    public void lanzarSiNegativo(int valor) {
+        if (valor < 0) {
+            throw new MiExcepcion("El valor no puede ser negativo");
+        }
+    }
+
+    @Test
+    public void ejercicio184_excepcionPersonalizada() {
+        // Verifica que la excepción se lanza con valores negativos
+        MiExcepcion ex = assertThrows(
+                MiExcepcion.class,
+                () -> lanzarSiNegativo(-5)
+        );
+        assertEquals("El valor no puede ser negativo", ex.getMessage());
+
+        // Verifica que NO se lanza con valores positivos
+        assertDoesNotThrow(() -> lanzarSiNegativo(10));
+    }
+
+    //185.-¿Qué es el synchronized y para qué se usa?
+    /*
+    synchronized es una palabra clave que bloquea un método o un bloque de código para que solo un hilo a la vez pueda ejecutarlo.
+    Se usa para:
+
+    Proteger datos compartidos y evitar que varios hilos los modifiquen simultáneamente (condiciones de carrera).
+
+    Asegurar la visibilidad: cuando un hilo libera el bloqueo, los cambios que hizo en las variables compartidas se vuelven visibles para los demás hilos que adquieran ese mismo bloqueo
+
+     */
+
+
+
 
 
 
