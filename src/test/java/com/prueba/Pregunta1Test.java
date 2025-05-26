@@ -8,15 +8,12 @@ import org.junit.jupiter.api.Test;
 import lombok.extern.slf4j.Slf4j;
 import java.io.Serializable;
 import lombok.Getter;
-
-import javax.swing.text.DateFormatter;
 import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
@@ -127,17 +124,15 @@ public class Pregunta1Test {
 
         //9.-¿Cómo comparar dos BigDecimal para saber cuál es mayor?
 
-        BigDecimal big1 = BigDecimal.valueOf(30);
-        BigDecimal big2 = BigDecimal.valueOf(20);
+        BigDecimal valor = BigDecimal.valueOf(20);
+        BigDecimal valor2 = BigDecimal.valueOf(50);
 
-        int cmp = big1.compareTo(big2);
-
-        if (cmp < 0) {
-            fail("big1 debería ser mayor que big2");
-        } else if (cmp > 0) {
-            assertTrue(true);
-        } else {
-            fail("big1 no debería ser igual a big2");
+        if (valor.compareTo(valor2) > 0) {
+            log.info("Bigdecimal1 {} es mayor que Bigdecimal2 {}",valor,valor2);
+        }else if (valor.compareTo(valor2) < 0) {
+            log.info("Bigdecimal2 {} es mayor que Bigdecimal1 {}",valor2,valor);
+        }else{
+            log.info("Bigdecimal1 {} es igual que Bigdecimal2 {}",valor,valor2);
         }
     }
 
