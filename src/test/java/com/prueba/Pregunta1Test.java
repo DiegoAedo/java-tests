@@ -21,9 +21,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -2280,19 +2285,213 @@ Acoplamiento fuerte: El uso excesivo de variables estáticas genera dependencias
 
      */
 
+    //186.-¿Cómo crear un hilo con Thread?
+
+    public class MiHilo extends Thread {
+        @Override
+        public void run() {
+            System.out.println("¡Hola desde MiHilo extendido!");
+        }
+    }
+
+    @Test
+    public void ejercicio186_ExtendiendoThread() {
+        Thread hilo = new MiHilo();
+        hilo.start(); // arranca el hilo (invoca run() de forma asíncrona)
+    }
+
+    //187.-¿Cómo crear un hilo con Runnable?
+
+    public class MiTarea implements Runnable {
+        @Override
+        public void run() {
+            // Lógica que quieres ejecutar en el hilo
+            System.out.println("¡Hola desde MiTarea!");
+        }
+    }
+
+    @Test
+    public void ejercicioCrearHiloConRunnable_Nombrado() {
+        Runnable tarea = new MiTarea();
+        Thread hilo = new Thread(tarea, "Hilo-Nombrado");
+        hilo.start(); // crea y arranca el hilo
+    }
+
+    //188.-¿Cómo detener un hilo?
+
+    public class HiloParable implements Runnable {
+        // Volatile para visibilidad inmediata entre hilos
+        private volatile boolean ejecutando = true;
+
+        @Override
+        public void run() {
+            while (ejecutando) {
+                // … trabajo del hilo …
+                System.out.println("Hilo en ejecución");
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    // Si también quieres que la interrupción pare el hilo:
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            System.out.println("Hilo detenido limpiamente");
+        }
+
+        // Método para solicitar la parada
+        public void detener() {
+            ejecutando = false;
+        }
+    }
+
+    // Uso:
+    @Test
+    public void testDetenerConFlag() throws InterruptedException {
+        HiloParable tarea = new HiloParable();
+        Thread hilo = new Thread(tarea);
+        hilo.start();
+
+        // Dejamos correr un rato…
+        Thread.sleep(2000);
+
+        // Pedimos la parada
+        tarea.detener();
+
+        // Esperamos a que termine
+        hilo.join();
+    }
 
 
+    //189.-¿Qué es una condición de carrera (race condition)?
+    /*
+    Una condición de carrera es una situación en la que el resultado de una operación depende del orden en que dos o más hilos o
+    procesos acceden o modifican datos compartidos, provocando comportamientos impredecibles.
+     */
 
+    //190.-¿Qué es la sincronización en hilos?
+    /*
+    La sincronización en hilos es el mecanismo que asegura que, cuando varios hilos acceden a un mismo recurso o sección crítica,
+    lo hagan de forma ordenada y no simultánea, evitando así estados inconsistentes o condiciones de carrera.
+     */
 
+    //191.-¿Qué es un ExecutorService?
+    /*
+    Un ExecutorService es una interfaz de Java que gestiona un conjunto de hilos para ejecutar tareas de forma asíncrona.
+    Se encarga de recibir trabajos, distribuirlos a los hilos disponibles y controlar su ciclo de vida (inicio, espera y cierre).
+     */
 
+    //192.-¿Cómo usar un ExecutorService para manejar hilos?
+    @Test
+    public void testExecutorService() throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<String> futuro = executor.submit(() -> "¡Hecho!");
+            assertEquals("¡Hecho!", futuro.get());
+        } finally {
+            executor.shutdown();
+            assertTrue(executor.awaitTermination(1, TimeUnit.SECONDS));
+        }
+    }
 
+    //193.-¿Qué es la clase Callable?
+    /*
+    Callable es una interfaz de Java que sirve para definir tareas que se ejecutan en otro hilo,
+    te devuelven un resultado cuando terminan y te permiten saber si ha ocurrido algún error.
+     */
 
+    //194.-¿Qué es un Future?
+    /*
+    Un Future es un objeto que representa el resultado de una tarea que se está ejecutando en otro hilo;
+    te permite saber si ya terminó, esperar a que acabe y luego obtener el valor que produjo, o incluso cancelar la tarea si aún no se ha completado.
+     */
 
+    //195.-¿Cómo manejar múltiples excepciones?
+    @Test
+    public void testManejoDeMultiplesExcepciones() {
+        try {
+            // Simulamos un código que puede lanzar IOException o SQLException
+            lanzarError(true, false);
+            fail("Se esperaba una excepción");
+        } catch (IOException | SQLException e) {
+            // Aquí manejamos ambas excepciones igual
+            assertTrue(
+                    e instanceof IOException || e instanceof SQLException,
+                    "Debe ser IOException o SQLException"
+            );
+        }
+    }
 
+    // Método de apoyo que lanza según los parámetros
+    private void lanzarError(boolean ioError, boolean sqlError) throws IOException, SQLException {
+        if (ioError) {
+            throw new IOException("Error de E/S simulado");
+        }
+        if (sqlError) {
+            throw new SQLException("Error de SQL simulado");
+        }
+    }
 
+    //196.-¿Qué es un bloque try-with-resources?
+    /*
+    El bloque try-with-resources es un try que declara recursos autocloseables
+    y los cierra automáticamente al salir del bloque, sin necesidad de un finally.
+     */
 
+    //197.-¿Cómo leer datos de un archivo de texto?
 
+    public void leeArchivos() throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader("ruta/al/archivo.txt"))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                System.out.println(linea);
+            }
+        }
+    }
 
+    //198.-¿Cómo escribir datos en un archivo de texto?
+
+    public void escribeArchivo() throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("ruta/al/archivo.txt"))) {
+            bw.write("Primera línea de texto");
+            bw.newLine();
+            bw.write("Segunda línea de texto");
+        }
+    }
+
+    //199.-¿Cómo lanzar una excepción desde un método?
+
+    public class MiExcepciont extends Exception {
+        public MiExcepciont(String msg) {
+            super(msg);
+        }
+    }
+
+    // 2) Método que arroja esa excepción
+    public void metodoQueFalla() throws MiExcepciont {
+        // alguna lógica…
+        // al detectar el error:
+        throw new MiExcepciont("¡Algo salió mal!");
+    }
+
+    // 3) Test con JUnit 5 para verificar que efectivamente se lanza
+    @Test
+    public void testMetodoQueFallaLanzaMiExcepcion() {
+        assertThrows(
+                MiExcepciont.class,
+                () -> metodoQueFalla(),
+                "Se esperaba que metodoQueFalla() lanzara MiExcepcion"
+        );
+    }
+
+    //200.-¿Qué es la reflexión en Java?
+
+    /*
+    La reflexión en Java es una API que, en tiempo de ejecución, permite inspeccionar y manipular la estructura interna de clases, métodos, campos y constructores (incluso los privados),
+    creando objetos e invocando métodos cuyos nombres solo se conocen dinámicamente; aunque otorga gran flexibilidad para frameworks,
+    pruebas y mapeos, su uso conlleva penalizaciones de rendimiento y posibles riesgos de seguridad al romper el encapsulamiento.
+
+     */
 
 }
 
